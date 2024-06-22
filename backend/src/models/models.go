@@ -23,8 +23,15 @@ type OutputRecipe struct {
 	SubrecipeList    []Recipe
 }
 
+type IngredientCategory struct {
+	CategoryID   int    `db:"categoryID"`
+	RecipeID     int    `db:"recipeID"`
+	CategoryName string `db:"categoryName"`
+}
+
 type RecipeIngredient struct {
 	RecipeIngredientID int    `db:"recipeIngredientID"`
+	CategoryID         int    `db:"categoryID"`
 	RecipeID           int    `db:"recipeID"`
 	IngredientID       int    `db:"ingredientID"`
 	Amount             string `db:"amount"`
@@ -51,8 +58,14 @@ type InputRecipeIngredient struct {
 	AmountUnit     string `db:"amountUnit"`
 }
 
+type InputIngredient struct {
+	CategoryName string
+	Ingredients  []InputRecipeIngredient
+}
+
 type OutputRecipeIngredient struct {
 	RecipeIngredientID int
+	CategoryID         int
 	IngredientID       int
 	IngredientName     string
 	Amount             string
@@ -60,22 +73,28 @@ type OutputRecipeIngredient struct {
 	Cost               float64
 }
 
+type OutputIngredient struct {
+	CategoryName string
+	Ingredients  []OutputRecipeIngredient
+	TotalCost    float64
+}
+
 type InputRecipe struct {
-	Title                  string
-	Steps                  string
-	ParentRecipeID         int
-	IsRescaled             bool
-	InputRecipeIngredients []InputRecipeIngredient `json:"recipeIngredients"`
-	RescaleInfo            RescaleInfo
+	Title            string
+	Steps            string
+	ParentRecipeID   int
+	IsRescaled       bool
+	InputIngredients []InputIngredient
+	RescaleInfo      RescaleInfo
 }
 
 type InputRecipeUpdate struct {
-	RecipeID               int
-	Title                  string
-	Steps                  string
-	IsRescaled             bool
-	InputRecipeIngredients []InputRecipeIngredient `json:"recipeIngredients"`
-	RescaleInfo            RescaleInfo
+	RecipeID         int
+	Title            string
+	Steps            string
+	IsRescaled       bool
+	InputIngredients []InputIngredient
+	RescaleInfo      RescaleInfo
 }
 
 type InputIngredientInfo struct {
@@ -93,7 +112,7 @@ type RecipeDetail struct {
 	IsRescaled        bool
 	CreatedDate       string
 	LastModifiedDate  string
-	Ingredients       []OutputRecipeIngredient
+	Ingredients       []OutputIngredient
 	RecipeRescaleInfo RescaleInfo
 	TotalCost         float64
 }
@@ -106,7 +125,10 @@ type conversionInfo struct {
 
 var Conversion_info = []conversionInfo{
 	{"kg", "g", 1000},
-	{"tsp", "g", 4},
+	{"tsp", "g", 5},
+	{"tsp", "ml", 5},
+	{"tbsp", "ml", 15},
+	{"tbsp", "g", 15},
 	{"g", "gr", 1},
 	{"ml", "cc", 1},
 	{"g", "cc", 1},
@@ -126,17 +148,21 @@ func PrintRecipeDetail(recipe_detail RecipeDetail) {
 	}
 }
 
-func PrintIngredients(recipe_ingredients []OutputRecipeIngredient) {
+func PrintIngredients(recipe_ingredients []OutputIngredient) {
 	fmt.Println("Ingredients:")
 	fmt.Println("=========================")
-	for _, recipe_ingredient := range recipe_ingredients {
-		fmt.Println("RecipeIngredientID:", recipe_ingredient.RecipeIngredientID)
-		fmt.Println("IngredientID:", recipe_ingredient.IngredientID)
-		fmt.Println("IngredientName: ", recipe_ingredient.IngredientName)
-		fmt.Println("Amount: ", recipe_ingredient.Amount)
-		fmt.Println("AmountUnit: ", recipe_ingredient.AmountUnit)
-		fmt.Printf("Cost: %.2f\n", recipe_ingredient.Cost)
+	for _, ingredient_group := range recipe_ingredients {
+		fmt.Println("Category Name:", ingredient_group.CategoryName)
 		fmt.Println("=========================")
+		for _, recipe_ingredient := range ingredient_group.Ingredients {
+			fmt.Println("RecipeIngredientID:", recipe_ingredient.RecipeIngredientID)
+			fmt.Println("IngredientID:", recipe_ingredient.IngredientID)
+			fmt.Println("IngredientName: ", recipe_ingredient.IngredientName)
+			fmt.Println("Amount: ", recipe_ingredient.Amount)
+			fmt.Println("AmountUnit: ", recipe_ingredient.AmountUnit)
+			fmt.Printf("Cost: %.2f\n", recipe_ingredient.Cost)
+			fmt.Println("=========================")
+		}
 	}
 }
 

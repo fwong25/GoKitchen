@@ -45,6 +45,7 @@
 </template>
 
 <script>
+import { host_info } from './../main.js'
 export default {
     data() {
         return {
@@ -53,7 +54,7 @@ export default {
     },
     methods: {
         fetchRecipeList() {
-            fetch('http://localhost:8000/list_recipe', {
+            fetch('http://' + host_info.backend_host + '/list_recipe', {
                 method: 'GET',
                 mode: 'cors',
                 headers: {

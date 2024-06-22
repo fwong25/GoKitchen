@@ -1,0 +1,26 @@
+{
+    "backend_server_idx": 0,
+    "frontend_server_idx": 1,
+    "Configs":[
+        {
+            "Name": "backend_server_local_cfg",
+            "Ip": "192.168.18.27",
+            "Port": 8000
+        },
+        {
+            "Name": "frontend_server_local_cfg",
+            "Ip": "192.168.18.27",
+            "Port": 5173
+        },
+        {
+            "Name": "backend_server_global_cfg",
+            "Ip": "182.253.51.95",
+            "Port": 8000
+        },
+        {
+            "Name": "frontend_server_global_cfg",
+            "Ip": "182.253.51.95",
+            "Port": 5173
+        }
+    ]
+}

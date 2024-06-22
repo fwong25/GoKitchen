@@ -1,3 +1,13 @@
+import json from './../../../ipcfg.json'
+console.log(json.Configs[json.frontend_server_idx])
+export const host_info = {
+    frontend_host: json.Configs[json.frontend_server_idx].Ip + ':' + json.Configs[json.frontend_server_idx].Port,
+    frontend_ip: json.Configs[json.frontend_server_idx].Ip,
+    fontend_port: json.Configs[json.frontend_server_idx].Port,
+    backend_host: json.Configs[json.backend_server_idx].Ip + ':' + json.Configs[json.backend_server_idx].Port,
+}
+console.log(host_info)
+
 import "bootstrap/dist/css/bootstrap.css"
 /* import the fontawesome core */
 import { library } from '@fortawesome/fontawesome-svg-core'

@@ -92,21 +92,7 @@ func getRecipe(w http.ResponseWriter, r *http.Request) {
 	}
 	http.Error(w, "", http.StatusBadRequest)
 }
-func insertRecipe2(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("Insert recipe called")
-	setHeader(w, "POST")
 
-	contentType := r.Header.Get("Content-type")
-
-	if contentType == "" {
-		return
-	}
-
-	fmt.Println(contentType)
-
-	var result, _ = json.Marshal(map[string]interface{}{"recipe_id": 0})
-	w.Write(result)
-}
 func insertRecipe(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("Insert recipe called")
 	setHeader(w, "POST")
@@ -121,7 +107,7 @@ func insertRecipe(w http.ResponseWriter, r *http.Request) {
 	fmt.Println(contentType)
 
 	var t models.InputRecipe
-	var ingredients []models.InputRecipeIngredient
+	var ingredients []models.InputIngredient
 
 	if contentType == "application/json" {
 		fmt.Println("content type is application/json")
@@ -140,12 +126,13 @@ func insertRecipe(w http.ResponseWriter, r *http.Request) {
 		t.ParentRecipeID, _ = strconv.Atoi(r.FormValue("parentRecipeID"))
 		t.IsRescaled, _ = strconv.ParseBool(r.FormValue("isRescaled"))
 
-		fmt.Println("recipeIngredients in bytes")
-		fmt.Println([]byte(r.FormValue("recipeIngredients")))
-		// json.Unmarshal([]byte(r.FormValue("recipeIngredients")), &t.InputRecipeIngredients)
-		if err := json.Unmarshal([]byte(r.FormValue("recipeIngredients")), &ingredients); err != nil {
+		fmt.Println("inputIngredients in bytes")
+		fmt.Println([]byte(r.FormValue("inputIngredients")))
+		// json.Unmarshal([]byte(r.FormValue("inputIngredients")), &t.InputIngredients)
+		if err := json.Unmarshal([]byte(r.FormValue("inputIngredients")), &ingredients); err != nil {
 			panic(err)
 		}
+		t.InputIngredients = ingredients
 
 		json.Unmarshal([]byte(r.FormValue("rescaleInfo")), &t.RescaleInfo)
 	}
@@ -176,14 +163,18 @@ func insertRecipe(w http.ResponseWriter, r *http.Request) {
 	http.Error(w, "", http.StatusBadRequest)
 }
 
-func printInputRecipeIngredients(input_ingredient []models.InputRecipeIngredient) {
+func printInputRecipeIngredients(input_ingredients []models.InputIngredient) {
 	fmt.Println("===============================")
-	for id, ingredient := range input_ingredient {
-		fmt.Println("Ingredient ID: ", id)
-		fmt.Println("Ingredient name: ", ingredient.IngredientName)
-		fmt.Println("Amount: ", ingredient.Amount)
-		fmt.Println("AmountUnit: ", ingredient.AmountUnit)
-		fmt.Println("===============================")
+	for _, input_ingredient := range input_ingredients {
+		fmt.Println("Category: ", input_ingredient.CategoryName)
+		fmt.Println("============================")
+		for id, ingredient := range input_ingredient.Ingredients {
+			fmt.Println("Ingredient ID: ", id)
+			fmt.Println("Ingredient name: ", ingredient.IngredientName)
+			fmt.Println("Amount: ", ingredient.Amount)
+			fmt.Println("AmountUnit: ", ingredient.AmountUnit)
+			fmt.Println("===============================")
+		}
 	}
 }
 
@@ -273,7 +264,7 @@ func updateRecipe(w http.ResponseWriter, r *http.Request) {
 		t.Title = r.FormValue("title")
 		t.Steps = r.FormValue("steps")
 		t.IsRescaled, _ = strconv.ParseBool(r.FormValue("isRescaled"))
-		json.Unmarshal([]byte(r.FormValue("recipeIngredients")), &t.InputRecipeIngredients)
+		json.Unmarshal([]byte(r.FormValue("inputIngredients")), &t.InputIngredients)
 		json.Unmarshal([]byte(r.FormValue("rescaleInfo")), &t.RescaleInfo)
 	}
 
@@ -360,7 +351,7 @@ func deleteIngredientInfo(w http.ResponseWriter, r *http.Request) {
 
 func setHeader(w http.ResponseWriter, allow_methods string) {
 	w.Header().Set("Content-Type", "application/json")
-	w.Header().Set("Access-Control-Allow-Origin", "http://localhost:5173")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
 	w.Header().Set("Access-Control-Allow-Credentials", "true")
 	w.Header().Set("Access-Control-Allow-Methods", allow_methods)
 	w.Header().Set("Access-Control-Allow-Headers", "Origin, Content-Type, Accept")

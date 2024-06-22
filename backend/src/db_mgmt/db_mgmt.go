@@ -241,11 +241,9 @@ func getRescaleInfo(recipe_id int) (rescale_info models.RescaleInfo) {
 	return rescale_info
 }
 
-func getRecipeIngredients(recipe_id int) (ingredient_list []models.OutputRecipeIngredient, total_cost float64) {
-	total_cost = 0
-	// get ingredients with recipe_id
-	place := models.OutputRecipeIngredient{}
-	queryStat := "SELECT \"recipeIngredientID\", \"ingredientID\", amount, \"amountUnit\"  FROM \"recipeIngredients\" WHERE \"recipeID\" = " + strconv.Itoa(recipe_id) + " ORDER BY \"recipeIngredientID\""
+func getIngredientCategories(recipe_id int) (ingredient_categories []models.IngredientCategory) {
+	place := models.IngredientCategory{}
+	queryStat := "SELECT \"categoryID\", \"recipeID\", \"categoryName\"  FROM \"ingredientCategory\" WHERE \"recipeID\" = " + strconv.Itoa(recipe_id) + " ORDER BY \"categoryID\""
 
 	rows, _ := db.Query(queryStat)
 	defer rows.Close()
@@ -253,17 +251,11 @@ func getRecipeIngredients(recipe_id int) (ingredient_list []models.OutputRecipeI
 	// ingredient_list := []models.OutputRecipeIngredient{}
 
 	for rows.Next() {
-		err := rows.Scan(&place.RecipeIngredientID, &place.IngredientID, &place.Amount, &place.AmountUnit) // Scan the current row into the "place" variable
+		err := rows.Scan(&place.CategoryID, &place.RecipeID, &place.CategoryName) // Scan the current row into the "place" variable
 		if err != nil {
 			fmt.Println("Error when scanning rows", err)
 		}
-
-		ingredient_info := getIngredientInfo(place.IngredientID)
-		place.IngredientName = ingredient_info.IngredientName
-		place.Cost = calculateIngredientCost(place, ingredient_info)
-		total_cost += place.Cost
-
-		ingredient_list = append([]models.OutputRecipeIngredient{place}, ingredient_list...)
+		ingredient_categories = append([]models.IngredientCategory{place}, ingredient_categories...)
 	}
 	// get any error encountered during iteration
 	err = rows.Err()
@@ -271,7 +263,55 @@ func getRecipeIngredients(recipe_id int) (ingredient_list []models.OutputRecipeI
 		fmt.Println("Error during note iteration", err)
 	}
 
-	return ingredient_list, total_cost
+	return ingredient_categories
+}
+
+func getRecipeIngredients(recipe_id int) (ingredient_output_list []models.OutputIngredient, total_cost float64) {
+	ingredient_categories := getIngredientCategories(recipe_id)
+	recipe_cost := 0.0
+	for _, ingredient_category := range ingredient_categories {
+		total_cost = 0
+		// get ingredients with category_id
+		ingredient_list := []models.OutputRecipeIngredient{}
+		place := models.OutputRecipeIngredient{}
+
+		ingredient_output_place := models.OutputIngredient{}
+
+		queryStat := "SELECT \"recipeIngredientID\", \"categoryID\", \"ingredientID\", amount, \"amountUnit\"  FROM \"recipeIngredients\" WHERE \"categoryID\" = " + strconv.Itoa(ingredient_category.CategoryID) + " ORDER BY \"recipeIngredientID\""
+
+		rows, _ := db.Query(queryStat)
+		defer rows.Close()
+
+		// ingredient_list := []models.OutputRecipeIngredient{}
+
+		for rows.Next() {
+			err := rows.Scan(&place.RecipeIngredientID, &place.CategoryID, &place.IngredientID, &place.Amount, &place.AmountUnit) // Scan the current row into the "place" variable
+			if err != nil {
+				fmt.Println("Error when scanning rows", err)
+			}
+
+			ingredient_info := getIngredientInfo(place.IngredientID)
+			place.IngredientName = ingredient_info.IngredientName
+			place.Cost = calculateIngredientCost(place, ingredient_info)
+			total_cost += place.Cost
+
+			ingredient_list = append([]models.OutputRecipeIngredient{place}, ingredient_list...)
+		}
+		// get any error encountered during iteration
+		err = rows.Err()
+		if err != nil {
+			fmt.Println("Error during note iteration", err)
+		}
+
+		ingredient_output_place.Ingredients = ingredient_list
+		ingredient_output_place.CategoryName = ingredient_category.CategoryName
+		ingredient_output_place.TotalCost = total_cost
+		ingredient_output_list = append([]models.OutputIngredient{ingredient_output_place}, ingredient_output_list...)
+
+		recipe_cost += total_cost
+	}
+
+	return ingredient_output_list, total_cost
 
 }
 
@@ -290,8 +330,9 @@ func getRecipeIngredientFromId(recipe_ingredient_id int) (recipe_ingredient mode
 	return recipe_ingredient
 }
 
-func getRescaledIngredients(parent_recipe_id int, rescale_info models.RescaleInfo) (ingredients []models.OutputRecipeIngredient, total_cost float64) {
-	total_cost = 0
+func getRescaledIngredients(parent_recipe_id int, rescale_info models.RescaleInfo) (ingredients []models.OutputIngredient, recipe_cost float64) {
+	recipe_cost = 0
+	total_cost := 0.0
 	rescaled_ingredient := getRecipeIngredientFromId(rescale_info.IngredientID)
 	fmt.Println("getRecipeIngredientFromId done")
 	// get parent recipe
@@ -309,17 +350,21 @@ func getRescaledIngredients(parent_recipe_id int, rescale_info models.RescaleInf
 	scale := float64(rescale_info.NewAmount) / original_amount
 	// multiply with all ingredients (amount and cost)
 	for id, parent_ingredient := range parent_ingredients {
-		amount_float, _ := strconv.ParseFloat(parent_ingredient.Amount, 64)
-		if err == nil {
-			amount_float = amount_float * scale
-			parent_ingredients[id].Amount = fmt.Sprintf("%.2f", amount_float)
+		total_cost = 0
+		for ingredient_id, ingredient := range parent_ingredient.Ingredients {
+			amount_float, _ := strconv.ParseFloat(ingredient.Amount, 64)
+			if err == nil {
+				amount_float = amount_float * scale
+				parent_ingredients[id].Ingredients[ingredient_id].Amount = fmt.Sprintf("%.2f", amount_float)
 
-			parent_ingredients[id].Cost = parent_ingredient.Cost * scale
-			total_cost += parent_ingredients[id].Cost
+				parent_ingredients[id].Ingredients[ingredient_id].Cost = ingredient.Cost * scale
+				total_cost += parent_ingredients[id].Ingredients[ingredient_id].Cost
+			}
 		}
+		parent_ingredients[id].TotalCost = total_cost
 	}
 
-	return parent_ingredients, total_cost
+	return parent_ingredients, recipe_cost
 }
 
 func getIngredientInfo(ingredient_id int) (ingredient_info models.IngredientInfo) {
@@ -399,7 +444,7 @@ func InsertRecipe(input_recipe models.InputRecipe) (recipe_id int) {
 	if input_recipe.IsRescaled {
 		insertRescaleInfo(recipe_id, input_recipe.RescaleInfo)
 	} else {
-		insertRecipeIngredients(recipe_id, input_recipe.InputRecipeIngredients)
+		insertRecipeIngredients(recipe_id, input_recipe.InputIngredients)
 	}
 
 	return
@@ -417,29 +462,49 @@ func insertRescaleInfo(recipe_id int, rescale_info models.RescaleInfo) {
 	}
 }
 
-func insertRecipeIngredients(recipe_id int, input_recipe_ingredients []models.InputRecipeIngredient) {
-	for _, input_recipe_ingredient := range input_recipe_ingredients {
-		ingredient_id := getIngredientIDFromName(input_recipe_ingredient.IngredientName)
-		if ingredient_id == -1 {
-			// register ingredient to database
-			var t models.InputIngredientInfo
-			t.IngredientName = input_recipe_ingredient.IngredientName
-			t.Cost = 0
-			t.Amount = 0
-			t.AmountUnit = "unknown"
+func insertIngredientCategory(recipe_id int, category_name string) (category_id int) {
+	sqlStatement := `
+		INSERT INTO "ingredientCategory" ("recipeID", "categoryName")
+		VALUES ($1, $2)
+		RETURNING "categoryID"`
 
-			ingredient_id = InsertIngredientInfo(t)
+	err := db.QueryRow(sqlStatement, recipe_id, category_name).Scan(&category_id)
+
+	if err != nil {
+		fmt.Println("Error when inserting ingredientCategory", err)
+	}
+
+	return category_id
+}
+
+func insertRecipeIngredients(recipe_id int, input_ingredients []models.InputIngredient) {
+	category_id := 0
+	for _, input_ingredient := range input_ingredients {
+		category_id = insertIngredientCategory(recipe_id, input_ingredient.CategoryName)
+		for _, input_recipe_ingredient := range input_ingredient.Ingredients {
+			ingredient_id := getIngredientIDFromName(input_recipe_ingredient.IngredientName)
+			if ingredient_id == -1 {
+				// register ingredient to database
+				var t models.InputIngredientInfo
+				t.IngredientName = input_recipe_ingredient.IngredientName
+				t.Cost = 0
+				t.Amount = 0
+				t.AmountUnit = "unknown"
+
+				ingredient_id = InsertIngredientInfo(t)
+			}
+
+			sqlStatement := `
+				INSERT INTO "recipeIngredients" ("recipeID", "categoryID", "ingredientID", amount, "amountUnit")
+				VALUES ($1, $2, $3, $4, $5)`
+
+			_, err := db.Exec(sqlStatement, recipe_id, category_id, ingredient_id, input_recipe_ingredient.Amount, input_recipe_ingredient.AmountUnit)
+
+			if err != nil {
+				fmt.Println("Error when inserting rescaleInfo", err)
+			}
 		}
 
-		sqlStatement := `
-			INSERT INTO "recipeIngredients" ("recipeID", "ingredientID", amount, "amountUnit")
-			VALUES ($1, $2, $3, $4)`
-
-		_, err := db.Exec(sqlStatement, recipe_id, ingredient_id, input_recipe_ingredient.Amount, input_recipe_ingredient.AmountUnit)
-
-		if err != nil {
-			fmt.Println("Error when inserting rescaleInfo", err)
-		}
 	}
 }
 
@@ -492,7 +557,7 @@ func UpdateRecipe(input_recipe models.InputRecipeUpdate) {
 		} else {
 			// delete existing rescaleInfo
 			DeleteRescaleInfo(input_recipe.RecipeID)
-			insertRecipeIngredients(input_recipe.RecipeID, input_recipe.InputRecipeIngredients)
+			insertRecipeIngredients(input_recipe.RecipeID, input_recipe.InputIngredients)
 		}
 	} else {
 
@@ -503,7 +568,7 @@ func UpdateRecipe(input_recipe models.InputRecipeUpdate) {
 			// delete existing recipeIngredients
 			DeleteRecipeIngredients(input_recipe.RecipeID)
 			// insert recipeIngredients
-			insertRecipeIngredients(input_recipe.RecipeID, input_recipe.InputRecipeIngredients)
+			insertRecipeIngredients(input_recipe.RecipeID, input_recipe.InputIngredients)
 		}
 	}
 
@@ -597,9 +662,18 @@ func DeleteSubrecipes(recipe_id int) {
 
 func DeleteRecipeIngredients(recipe_id int) {
 	sqlStatement := `
-		DELETE FROM "recipeIngredients"
+		DELETE FROM "ingredientCategory"
 		WHERE "recipeID" = $1;`
 	_, err := db.Exec(sqlStatement, recipe_id)
+
+	if err != nil {
+		fmt.Println("Error when deleting ingredientCategory", err)
+	}
+
+	sqlStatement = `
+		DELETE FROM "recipeIngredients"
+		WHERE "recipeID" = $1;`
+	_, err = db.Exec(sqlStatement, recipe_id)
 
 	if err != nil {
 		fmt.Println("Error when deleting recipeIngredient", err)

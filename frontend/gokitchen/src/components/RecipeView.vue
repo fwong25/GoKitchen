@@ -27,37 +27,44 @@
         </form>
 
         <br>
-        <table class="table">
-            <thead>
-                <tr>
-                    <th scope="col">#</th>
-                    <th scope="col">Ingredient</th>
-                    <th scope="col">Amount</th>
-                    <th scope="col">Cost</th>
-                </tr>
-            </thead>
-            <tbody>
-                <!-- <tr>
-                    <th scope="row">1</th>
-                    <td>Flour</td>
-                    <td>100g</td>
-                    <td>1000</td>
-                </tr> -->
-                <tr v-for="ingredient in selected_recipe.Ingredients">
-                    <th scope="row">{{ ingredient.id }}</th>
-                    <td>{{ ingredient.IngredientName }}</td>
-                    <td>{{ ingredient.Amount }} {{ ingredient.AmountUnit }}</td>
-                    <td v-if="ingredient.Cost == 0">-</td>
-                    <td v-else>Rp. {{ ingredient.Cost }}</td>
-                </tr>
-                <tr>
-                    <th scope="row"></th>
-                    <th>Total Cost</th>
-                    <td></td>
-                    <td>Rp. {{ selected_recipe.TotalCost }}</td>
-                </tr>
-            </tbody>
-        </table>
+        
+        <div v-for="ingredient_category in selected_recipe.Ingredients">
+            <br>
+            <h5>{{ ingredient_category.CategoryName }}</h5>
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th scope="col">#</th>
+                        <!-- <th scope="col">Ingredient</th> -->
+                        <th scope="col">Ingredients</th>
+                        <th scope="col">Amount</th>
+                        <th scope="col">Cost</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- <tr>
+                        <th scope="row">1</th>
+                        <td>Flour</td>
+                        <td>100g</td>
+                        <td>1000</td>
+                    </tr> -->
+                    <tr v-for="ingredient in ingredient_category.Ingredients">
+                        <th scope="row">{{ ingredient.id }}</th>
+                        <td>{{ ingredient.IngredientName }}</td>
+                        <td>{{ ingredient.Amount }} {{ ingredient.AmountUnit }}</td>
+                        <td v-if="ingredient.Cost == 0">-</td>
+                        <td v-else>Rp. {{ ingredient.Cost }}</td>
+                    </tr>
+                    <tr>
+                        <th scope="row"></th>
+                        <th>Total Cost</th>
+                        <td></td>
+                        <td>Rp. {{ ingredient_category.TotalCost }}</td>
+                        <!-- <td>Rp. {{ selected_recipe.TotalCost }}</td> -->
+                    </tr>
+                </tbody>
+            </table>
+        </div>
 
         <h5>Steps</h5>
         <p class="mb-1" style="white-space: pre-line" id="steps_p"></p>
@@ -65,6 +72,7 @@
 </template>
 
 <script>
+import { host_info } from './../main.js'
 export default {
     data() {
         return {
@@ -89,7 +97,7 @@ export default {
     },
     methods: {
         fetchSelectedRecipe(recipe_id) {
-            fetch('http://localhost:8000/get_recipe?' + 
+            fetch('http://' + host_info.backend_host + '/get_recipe?' + 
                 new URLSearchParams({
                     recipe_id: recipe_id
                 }), 
@@ -115,15 +123,19 @@ export default {
                     title_p.innerHTML = this.selected_recipe.Title;
                     steps_p.innerHTML = this.selected_recipe.Steps;
 
-                    if (this.selected_recipe.Ingredients != null)
+                    if (this.selected_recipe.Ingredients != null) {
                         for (let i = 0; i < this.selected_recipe.Ingredients.length; ++i) {
-                            this.selected_recipe.Ingredients[i]["id"] = i+1;
+                            if (this.selected_recipe.Ingredients[i].Ingredients != null)
+                                for (let j = 0; j < this.selected_recipe.Ingredients[i].Ingredients.length; ++j) {
+                                    this.selected_recipe.Ingredients[i].Ingredients[j]["id"] = j+1;
+                                }
                         }
+                    }     
                 })
             })
         },
         deleteRecipe() {
-            fetch('http://localhost:8000/delete_recipe?' + 
+            fetch('http://' + host_info.backend_host + '/delete_recipe?' + 
                     new URLSearchParams({
                         recipe_id: this.$route.query.recipe_id
                     }), 
