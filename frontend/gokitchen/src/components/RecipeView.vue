@@ -114,8 +114,6 @@ export default {
                 console.log(response)
                 response.json().then((data) => {
                     console.log(data.recipe)
-                    console.log(data.recipe.Title)
-                    console.log(data.recipe.Steps)
                     this.selected_recipe = data.recipe
 
                     const title_p = document.getElementById("title_p");

@@ -11,9 +11,9 @@ console.log(host_info)
 import "bootstrap/dist/css/bootstrap.css"
 /* import the fontawesome core */
 import { library } from '@fortawesome/fontawesome-svg-core'
-import { faCheckDouble, faPlusCircle, faTrashAlt, faPencilAlt, faPlus, faCheck } from "@fortawesome/free-solid-svg-icons";
+import { faCheckDouble, faPlusCircle, faTrashAlt, faPencilAlt, faPlus, faCheck, faCaretDown } from "@fortawesome/free-solid-svg-icons";
 import { faPlusSquare } from "@fortawesome/free-regular-svg-icons";
-library.add(faCheckDouble, faPlusCircle, faTrashAlt, faPencilAlt, faPlus, faCheck, faPlusSquare)
+library.add(faCheckDouble, faPlusCircle, faTrashAlt, faPencilAlt, faPlus, faCheck, faPlusSquare, faCaretDown)
 
 /* import font awesome icon component */
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
@@ -39,11 +39,41 @@ const router = createRouter({
         { path: '/recipe_view', component: RecipeView },
         { path: '/ingredient_info_view', component: IngredientInfoView },
         { path: '/recipe_edit', component: RecipeEdit },
+        { path: '/sidebar', component: Sidebar },
     ]
 });
 
 const app = createApp(App)
 app.use(router)
+
+// export var subrecipe_list_id = 0
+import { createStore } from 'vuex'
+const store = createStore({
+    state () {
+      return {
+        subrecipe_list_id: 0
+      }
+    },
+    getters: {
+        subrecipeListId: function (state) {
+            console.log('get subrecipe_list_id')
+            console.log(state.subrecipe_list_id)
+            return state.subrecipe_list_id
+        }
+    },
+    actions: {
+      setSubrecipeListId (context, payload) {
+        const subrecipe_list_id = payload
+        context.commit('UPDATE_SUBRECIPE_LIST_ID', subrecipe_list_id)
+      }
+    },
+    mutations: {
+        UPDATE_SUBRECIPE_LIST_ID(state, payload) {
+            state.subrecipe_list_id = payload
+        }
+    }
+})
+app.use(store)
 
 app.component('sidebar', Sidebar)
 // app.component('note-edit-template', NoteEditTemplate)

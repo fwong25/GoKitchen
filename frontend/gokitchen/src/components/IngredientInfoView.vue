@@ -110,6 +110,7 @@
 </template>
 
 <script>
+import { host_info } from './../main.js'
 export default {
     data() {
         return {
@@ -131,7 +132,7 @@ export default {
     },
     methods: {
         fetchIngredientList() {
-            fetch('http://localhost:8000/list_ingredient_info', 
+            fetch('http://' + host_info.backend_host + '/list_ingredient_info', 
                 {
                 method: 'GET',
                 mode: 'cors',
@@ -157,7 +158,7 @@ export default {
             })
         },
         addIngredient() {
-            fetch('http://localhost:8000/insert_ingredient_info', 
+            fetch('http://' + host_info.backend_host + '/insert_ingredient_info', 
                     {
                     method: 'POST',
                     mode: 'cors',
@@ -189,7 +190,7 @@ export default {
             this.edit_cost = this.ingredient_list[edit_ingredient_order_id-1].Cost
         },
         deleteIngredient(ingredient_id) {
-            fetch('http://localhost:8000/delete_ingredient_info?' + 
+            fetch('http://' + host_info.backend_host + '/delete_ingredient_info?' + 
                     new URLSearchParams({
                         ingredient_id: ingredient_id
                     }), 
@@ -207,7 +208,7 @@ export default {
                 })
         },
         confirmEditIngredient() {
-            fetch('http://localhost:8000/update_ingredient_info', 
+            fetch('http://' + host_info.backend_host + '/update_ingredient_info', 
                     {
                     method: 'PUT',
                     mode: 'cors',
