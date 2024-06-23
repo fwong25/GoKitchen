@@ -4,6 +4,7 @@ saving the time needed to calculate the cost one by one based on the amount of t
 
 # Prerequisites:
 Frontend: vue.js, bootstrap, font-awesome
+
 Backend: golang
 
 ## Database setup
