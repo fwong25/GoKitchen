@@ -1,6 +1,14 @@
 # Introduction
 GoKitchen is a convenient web app for organizing recipes and calculating cost of the ingredients,
-saving the time needed to calculate the cost one by one based on the amount of the ingredient
+saving the time needed to calculate the cost manually based on the amount of the ingredient
+
+Features:
+- Record recipes
+- Create modification of recipes easily
+- Rescale recipes without needing to calculate amount of rescaled ingredients one by one
+- Automatically calculate the cost based on listed ingredients
+
+<img src="assets/intro.png" alt="drawing" width="500"/>
 
 # Prerequisites:
 Frontend: vue.js, bootstrap, font-awesome
@@ -87,3 +95,25 @@ Backend server:
 cd backend
 go run main.go
 ```
+
+# UI Introduction
+## Sidebar
+<img src="assets/sidebar.png" alt="drawing" width="500"/>
+
+## Add new recipe
+<img src="assets/add_new_recipe.png" alt="drawing" width="500"/>
+
+### Insert ingredient steps
+<img src="assets/add_ingredient_steps.png" alt="drawing" width="500"/>
+
+## View recipe
+<img src="assets/view_recipe.png" alt="drawing" width="500"/>
+
+## Edit recipe page
+<img src="assets/edit_recipe_page.png" alt="drawing" width="500"/>
+
+## Add new subrecipe
+<img src="assets/add_new_subrecipe.png" alt="drawing" width="500"/>
+
+## Ingredient info page
+<img src="assets/ingredients_info_page.png" alt="drawing" width="500"/>

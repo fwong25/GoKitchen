@@ -22,8 +22,8 @@
             <li class="nav-item" v-for="recipe in recipe_list">
                 <!-- <form  class="d-inline"> -->
                     <!-- <nobr> -->
-                        <i v-if="recipe.ParentRecipeID > 0">-</i>
-                        <button type="submit" class="astext" @click.stop.prevent="viewRecipe(recipe.RecipeID)">
+                        <!-- <i v-if="recipe.ParentRecipeID > 0">-</i> -->
+                        <button type="submit" class="astext" @click.stop.prevent="viewRecipe(recipe.RecipeID, recipe.ParentRecipeID)">
                             <i class="fs-4 bi-house"></i> <span class="ms-1 d-none d-sm-inline text-white">{{ recipe.Title }}</span>
                         </button>
                         <button  v-if="recipe.SubrecipeList.length != 0" type="submit" class="astext" @click.stop.prevent="toggleSubrecipeList(recipe.RecipeID)">
@@ -35,7 +35,7 @@
                             <!-- <form  class="d-inline"> -->
                                 <nobr>
                                     <!-- <i>-</i> -->
-                                    <button type="submit" class="astext text-start" @click.stop.prevent="viewRecipe(subrecipe.RecipeID)">
+                                    <button type="submit" class="astext text-start" @click.stop.prevent="viewRecipe(subrecipe.RecipeID, subrecipe.ParentRecipeID)">
                                         <i class="fs-4 bi-house"></i><span class="text-wrap ms-1 d-none d-sm-inline text-white">{{ subrecipe.Title }}</span>
                                     </button>
                                 </nobr>
@@ -85,9 +85,15 @@ export default {
         addNewRecipe() {
             this.$router.push({ path: 'recipe_add_new', query: { parent_recipe_id: 0 } });
         },
-        viewRecipe(recipe_id) {
-            this.$store.dispatch('setSubrecipeListId', recipe_id)
+        viewRecipe(recipe_id, parent_recipe_id) {
+            if (parent_recipe_id != 0) {
+                this.$store.dispatch('setSubrecipeListId', parent_recipe_id)
+            }
+            else {
+                this.$store.dispatch('setSubrecipeListId', recipe_id)
+            }
             this.$router.push({ path: 'recipe_view', query: { recipe_id: recipe_id } });
+
         },
         backToHome() {
             this.$router.push({ path: '/' });
