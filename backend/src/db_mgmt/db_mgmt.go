@@ -532,7 +532,7 @@ func InsertIngredientInfo(input_ingredient_info models.InputIngredientInfo) (ing
 
 func getIngredientIDFromName(ingredient_name string) (ingredient_id int) {
 	ingredient_id = -1
-	queryStat := "SELECT \"ingredientID\" from \"ingredientInfo\" WHERE \"ingredientName\" = '" + ingredient_name + "'"
+	queryStat := "SELECT \"ingredientID\" from \"ingredientInfo\" WHERE LOWER(\"ingredientName\") = '" + strings.ToLower(ingredient_name) + "'"
 
 	rows, _ := db.Query(queryStat)
 	defer rows.Close()
