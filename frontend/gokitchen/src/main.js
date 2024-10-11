@@ -52,7 +52,8 @@ const store = createStore({
     state () {
       return {
         subrecipe_list_id: 0,
-        view_recipe_id: 0
+        view_recipe_id: 0,
+        view_recipe_parent_id: 0,
       }
     },
     getters: {
@@ -65,7 +66,12 @@ const store = createStore({
           console.log('get view_recipe_id')
           console.log(state.view_recipe_id)
           return state.view_recipe_id
-      }
+        },
+        viewRecipeParentId: function (state) {
+          console.log('get view_recipe_parent_id')
+          console.log(state.view_recipe_parent_id)
+          return state.view_recipe_parent_id
+        }
     },
     actions: {
       setSubrecipeListId (context, payload) {
@@ -75,6 +81,10 @@ const store = createStore({
       setViewRecipeId (context, payload) {
         const view_recipe_id = payload
         context.commit('UPDATE_VIEW_RECIPE_ID', view_recipe_id)
+      },
+      setViewRecipeParentId (context, payload) {
+        const view_recipe_parent_id = payload
+        context.commit('UPDATE_VIEW_RECIPE_PARENT_ID', view_recipe_parent_id)
       }
     },
     mutations: {
@@ -83,7 +93,10 @@ const store = createStore({
         },
         UPDATE_VIEW_RECIPE_ID(state, payload) {
           state.view_recipe_id = payload
-      }
+        },
+        UPDATE_VIEW_RECIPE_PARENT_ID(state, payload) {
+          state.view_recipe_parent_id = payload
+        }
     }
 })
 app.use(store)

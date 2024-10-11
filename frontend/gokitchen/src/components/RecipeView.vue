@@ -168,8 +168,10 @@ export default {
         }
     },
     beforeMount() {
-        this.$store.dispatch('setViewRecipeId', this.$route.query.recipe_id)
         this.fetchSelectedRecipe(this.$route.query.recipe_id)
+        this.$store.dispatch('setViewRecipeId', this.$route.query.recipe_id)
+        console.log(this.selected_recipe.ParentRecipeID)
+        this.$store.dispatch('setViewRecipeParentId', this.$route.query.parent_recipe_id)
     }
 }
 </script>

@@ -9,6 +9,7 @@
 export default {
     beforeMount() {
         this.$store.dispatch('setViewRecipeId', 0)
+        this.$store.dispatch('setViewRecipeParentId', 0)
     }
 }
 </script>

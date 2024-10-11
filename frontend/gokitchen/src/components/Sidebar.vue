@@ -32,13 +32,15 @@
                             &nbsp; &nbsp;<font-awesome-icon icon="caret-down" size="s" class="text-white"/>
                         </button>
 
-                        <div v-if="$store.getters.subrecipeListId == recipe.RecipeID || $store.getters.viewRecipeId == recipe.RecipeID" class="dropdown-container" v-for="subrecipe in recipe.SubrecipeList">
+                        <div v-if="$store.getters.subrecipeListId == recipe.RecipeID || $store.getters.viewRecipeId == recipe.RecipeID || $store.getters.viewRecipeParentId == recipe.RecipeID" class="dropdown-container" v-for="subrecipe in recipe.SubrecipeList">
                         <li class="dropdown-item nav-item">
                             <!-- <form  class="d-inline"> -->
                                 <nobr>
                                     <!-- <i>-</i> -->
                                     <button type="submit" class="astext text-start" @click.stop.prevent="viewRecipe(subrecipe.RecipeID, subrecipe.ParentRecipeID)">
-                                        <i class="fs-4 bi-house"></i><span class="text-wrap ms-1 d-none d-sm-inline text-white">{{ subrecipe.Title }}</span>
+                                        <i class="fs-4 bi-house"></i>
+                                        <span v-if="$store.getters.viewRecipeId == subrecipe.RecipeID" class="text-wrap ms-1 d-none d-sm-inline text-warning">{{ subrecipe.Title }}</span>
+                                        <span v-else class="text-wrap ms-1 d-none d-sm-inline text-white">{{ subrecipe.Title }}</span>
                                     </button>
                                 </nobr>
                             <!-- </form> -->
@@ -95,7 +97,8 @@ export default {
                 this.$store.dispatch('setSubrecipeListId', recipe_id)
             }
             this.$store.dispatch('setViewRecipeId', recipe_id)
-            this.$router.push({ path: 'recipe_view', query: { recipe_id: recipe_id } });
+            this.$store.dispatch('setViewRecipeParentId', parent_recipe_id)
+            this.$router.push({ path: 'recipe_view', query: { recipe_id: recipe_id, parent_recipe_id: parent_recipe_id } });
 
         },
         backToHome() {
