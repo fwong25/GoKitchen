@@ -51,7 +51,8 @@ import { createStore } from 'vuex'
 const store = createStore({
     state () {
       return {
-        subrecipe_list_id: 0
+        subrecipe_list_id: 0,
+        view_recipe_id: 0
       }
     },
     getters: {
@@ -59,18 +60,30 @@ const store = createStore({
             console.log('get subrecipe_list_id')
             console.log(state.subrecipe_list_id)
             return state.subrecipe_list_id
-        }
+        },
+        viewRecipeId: function (state) {
+          console.log('get view_recipe_id')
+          console.log(state.view_recipe_id)
+          return state.view_recipe_id
+      }
     },
     actions: {
       setSubrecipeListId (context, payload) {
         const subrecipe_list_id = payload
         context.commit('UPDATE_SUBRECIPE_LIST_ID', subrecipe_list_id)
+      },
+      setViewRecipeId (context, payload) {
+        const view_recipe_id = payload
+        context.commit('UPDATE_VIEW_RECIPE_ID', view_recipe_id)
       }
     },
     mutations: {
         UPDATE_SUBRECIPE_LIST_ID(state, payload) {
             state.subrecipe_list_id = payload
-        }
+        },
+        UPDATE_VIEW_RECIPE_ID(state, payload) {
+          state.view_recipe_id = payload
+      }
     }
 })
 app.use(store)

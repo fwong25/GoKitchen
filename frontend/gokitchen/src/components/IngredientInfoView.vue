@@ -237,6 +237,7 @@ export default {
         }
     },
     beforeMount() {
+        this.$store.dispatch('setViewRecipeId', 0)
         this.fetchIngredientList()
     }
 }

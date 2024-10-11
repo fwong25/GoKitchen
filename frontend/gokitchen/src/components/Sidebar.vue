@@ -24,13 +24,15 @@
                     <!-- <nobr> -->
                         <!-- <i v-if="recipe.ParentRecipeID > 0">-</i> -->
                         <button type="submit" class="astext" @click.stop.prevent="viewRecipe(recipe.RecipeID, recipe.ParentRecipeID)">
-                            <i class="fs-4 bi-house"></i> <span class="ms-1 d-none d-sm-inline text-white">{{ recipe.Title }}</span>
+                            <i class="fs-4 bi-house"></i>
+                            <span v-if="$store.getters.viewRecipeId == recipe.RecipeID" class="ms-1 d-none d-sm-inline text-warning">{{ recipe.Title }}</span>
+                            <span v-else class="ms-1 d-none d-sm-inline text-white">{{ recipe.Title }}</span>
                         </button>
                         <button  v-if="recipe.SubrecipeList.length != 0" type="submit" class="astext" @click.stop.prevent="toggleSubrecipeList(recipe.RecipeID)">
                             &nbsp; &nbsp;<font-awesome-icon icon="caret-down" size="s" class="text-white"/>
                         </button>
 
-                        <div v-if="$store.getters.subrecipeListId == recipe.RecipeID" class="dropdown-container" v-for="subrecipe in recipe.SubrecipeList">
+                        <div v-if="$store.getters.subrecipeListId == recipe.RecipeID || $store.getters.viewRecipeId == recipe.RecipeID" class="dropdown-container" v-for="subrecipe in recipe.SubrecipeList">
                         <li class="dropdown-item nav-item">
                             <!-- <form  class="d-inline"> -->
                                 <nobr>
@@ -92,6 +94,7 @@ export default {
             else {
                 this.$store.dispatch('setSubrecipeListId', recipe_id)
             }
+            this.$store.dispatch('setViewRecipeId', recipe_id)
             this.$router.push({ path: 'recipe_view', query: { recipe_id: recipe_id } });
 
         },

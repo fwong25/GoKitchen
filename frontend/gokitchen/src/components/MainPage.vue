@@ -6,6 +6,11 @@
 </template>
 
 <script>
+export default {
+    beforeMount() {
+        this.$store.dispatch('setViewRecipeId', 0)
+    }
+}
 </script>
 
 <style>
